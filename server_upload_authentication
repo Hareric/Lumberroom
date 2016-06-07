@@ -1,32 +1,38 @@
-#!/usr/bin/env python
+# coding=utf-8
 
-"""Simple HTTP Server With Upload.
-This module builds on BaseHTTPServer by implementing the standard GET
-and HEAD requests in a fairly straightforward manner.
 """
+Simple HTTP Server With Upload and Authentication.
+"""
+'''
+https://gist.github.com/fxsjy/5465353
+https://gist.github.com/UniIsland/3346170
+'''
 
-
-__version__ = "0.1"
+__version__ = "0.2"
 __all__ = ["SimpleHTTPRequestHandler"]
-__author__ = "bones7456"
-__home_page__ = "http://li2z.cn/"
+__author__ = "bones7456, Hareric"
+__home_page__ = "http://li2z.cn/, http://hareric.com"
 
 import os
 import posixpath
-import BaseHTTPServer
 import urllib
 import cgi
 import shutil
 import mimetypes
 import re
+import BaseHTTPServer
+import sys
+import base64
+
 try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
 
+key = ""
+
 
 class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-
     """Simple HTTP request handler with GET/HEAD/POST commands.
     This serves files from the current directory and any of its
     subdirectories.  The MIME type for files is determined by
@@ -38,7 +44,7 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     server_version = "SimpleHTTPWithUpload/" + __version__
 
-    def do_GET(self):
+    def do_GET1(self):
         """Serve a GET request."""
         f = self.send_head()
         if f:
@@ -50,6 +56,29 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         f = self.send_head()
         if f:
             f.close()
+
+    def do_AUTHHEAD(self):
+        print "send header"
+        self.send_response(401)
+        self.send_header('WWW-Authenticate', 'Basic realm=\"Test\"')
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+    def do_GET(self):
+        global key
+        ''' Present frontpage with user authentication. '''
+        if self.headers.getheader('Authorization') is None:
+            self.do_AUTHHEAD()
+            self.wfile.write('no auth header received')
+            pass
+        elif self.headers.getheader('Authorization') == 'Basic ' + key:
+            SimpleHTTPRequestHandler.do_GET1(self)
+            pass
+        else:
+            self.do_AUTHHEAD()
+            self.wfile.write(self.headers.getheader('Authorization'))
+            self.wfile.write('not authenticated')
+            pass
 
     def do_POST(self):
         """Serve a POST request."""
@@ -66,9 +95,9 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             f.write("<strong>Failed:</strong>")
         f.write(info)
         f.write("<br><a href=\"%s\">back</a>" % self.headers['referer'])
-        f.write("<hr><small>Powerd By: bones7456, check new version at ")
-        f.write("<a href=\"http://li2z.cn/?s=SimpleHTTPServerWithUpload\">")
-        f.write("here</a>.</small></body>\n</html>\n")
+        f.write("<hr><small>Powerd By: Hareric")
+        f.write("<a href=\"http://github.com/hareric\">")
+        f.write("blog</a>.</small></body>\n</html>\n")
         length = f.tell()
         f.seek(0)
         self.send_response(200)
@@ -78,7 +107,7 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if f:
             self.copyfile(f, self.wfile)
             f.close()
-        
+
     def deal_post_data(self):
         boundary = self.headers.plisttext.split("=")[1]
         remainbytes = int(self.headers['content-length'])
@@ -101,7 +130,7 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             out = open(fn, 'wb')
         except IOError:
             return (False, "Can't create file to write, do you have permission to write?")
-                
+
         preline = self.rfile.readline()
         remainbytes -= len(preline)
         while remainbytes > 0:
@@ -210,8 +239,8 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         probably be diagnosed.)
         """
         # abandon query parameters
-        path = path.split('?',1)[0]
-        path = path.split('#',1)[0]
+        path = path.split('?', 1)[0]
+        path = path.split('#', 1)[0]
         path = posixpath.normpath(urllib.unquote(path))
         words = path.split('/')
         words = filter(None, words)
@@ -257,19 +286,31 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             return self.extensions_map['']
 
     if not mimetypes.inited:
-        mimetypes.init() # try to read system mime.types
+        mimetypes.init()  # try to read system mime.types
     extensions_map = mimetypes.types_map.copy()
     extensions_map.update({
-        '': 'application/octet-stream', # Default
+        '': 'application/octet-stream',  # Default
         '.py': 'text/plain',
         '.c': 'text/plain',
         '.h': 'text/plain',
-        })
+    })
 
 
-def test(HandlerClass = SimpleHTTPRequestHandler,
-         ServerClass = BaseHTTPServer.HTTPServer):
+def test(HandlerClass=SimpleHTTPRequestHandler,
+         ServerClass=BaseHTTPServer.HTTPServer):
     BaseHTTPServer.test(HandlerClass, ServerClass)
 
+
 if __name__ == '__main__':
-    test()
+    if len(sys.argv) < 3:
+        print "运行错误，请进入需要共享的文件夹后，按以下格式运行"
+        print "python server_upload_authentication.py 端口号 用户名:密码"
+        sys.exit()
+    key = base64.b64encode(sys.argv[2])
+    try:
+        print "已打开服务器，可通过访问, 本机IP地址:端口号 访问服务器"
+        test()
+    except:
+        print "关闭服务器"
+
+
