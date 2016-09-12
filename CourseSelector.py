@@ -11,9 +11,9 @@ import cookielib
 import time
 import re
 import sys
+from multiprocessing import Process,Manager,Lock,Pool
 
-
-def login(username, password):
+def login(username, password, pro_id):
     # 初始化一个CookieJar来处理Cookie的信息
     cookie = cookielib.CookieJar()
     # 建一个新的opener来使用我们的CookieJar
@@ -35,19 +35,22 @@ def login(username, password):
 
     req = urllib2.Request(url='http://jxgl.gdufs.edu.cn/jsxsd/', headers=header)
     result = opener.open(req)
-    print time.strftime("%Y-%m-%d %H:%M:%S"), '  选课系统主页'
+    print time.strftime("%Y-%m-%d %H:%M:%S"), '进程%i---->  选课系统主页' % pro_id
     html = result.read()
-    print time.strftime("%Y-%m-%d %H:%M:%S"), '  准备登陆'
+    print time.strftime("%Y-%m-%d %H:%M:%S"), '进程%i---->  准备登陆' % pro_id
     html = opener.open("http://jxgl.gdufs.edu.cn/jsxsd/xk/LoginToXkLdap", data=postdata).read()  # 登陆
-    print time.strftime("%Y-%m-%d %H:%M:%S"), '  登陆成功'
+    print time.strftime("%Y-%m-%d %H:%M:%S"), '进程%i---->  登陆成功' % pro_id
     html = opener.open("http://jxgl.gdufs.edu.cn/jsxsd/xsxk/xklc_list?Ves632DSdyV=NEW_XSD_PYGL").read()  #
-    print time.strftime("%Y-%m-%d %H:%M:%S"), '  选课中心'
+    print time.strftime("%Y-%m-%d %H:%M:%S"), '进程%i---->  选课中心' % pro_id
     html = opener.open(
-        "http://jxgl.gdufs.edu.cn/jsxsd/xsxk/xsxk_index?jx0502zbid=6AD1AA28D7FF4F25A58710392D4B1431").read()  # 选课系统
+        "http://jxgl.gdufs.edu.cn/jsxsd/xsxk/xsxk_index?jx0502zbid=7F1363248E0D41438D19DE2681AC1CAA").read()  # 选课系统
+    if '未开放' in html:
+        print "当前未开放选课，具体请查看学校选课通知！ "
+        assert False
     while "不在选课时间" in html:
         time.sleep(20)
         html = opener.open(
-            "http://jxgl.gdufs.edu.cn/jsxsd/xsxk/xsxk_index?jx0502zbid=6AD1AA28D7FF4F25A58710392D4B1431").read()  # 选课系统
+            "http://jxgl.gdufs.edu.cn/jsxsd/xsxk/xsxk_index?jx0502zbid=7F1363248E0D41438D19DE2681AC1CAA").read()  # 选课系统
         print "Again!!!"
         if 'loginUrl' in html:
             return 0
@@ -77,7 +80,7 @@ def login(username, password):
         pattern = '"message":"(.*?)"'
         if '"message":"选课' in html:
             sys.stdout.write(
-                '\r第%i次尝试  ' % try_num + time.strftime("%Y-%m-%d %H:%M:%S") + "  " + re.search(pattern, html).group(1))
+                '\r进程%i---->第%i次尝试  ' % (pro_id, try_num) + time.strftime("%Y-%m-%d %H:%M:%S") + "  " + re.search(pattern, html).group(1))
             sys.stdout.flush()
         else:
             sys.stdout.write('\r' + time.strftime("%Y-%m-%d %H:%M:%S") + "     " + html)
@@ -90,10 +93,13 @@ def login(username, password):
 
 if __name__ == '__main__':
 
-    while True:
-        if login('2014###', '###') == 0:  # 输入帐号密码
-            continue
-        else:
-            break
-
-
+    # while True:
+    #     if login('2014###', '###') == 0:  # 输入帐号密码
+    #         continue
+    #     else:
+    #         break
+    p = Pool(processes=10)
+    for i in range(10):
+        p.apply_async(login, ['2014####', '####', i])
+    p.close()
+    p.join()
