@@ -11,7 +11,8 @@ import cookielib
 import time
 import re
 import sys
-from multiprocessing import Process,Manager,Lock,Pool
+from multiprocessing import Pool
+
 
 def login(username, password, pro_id):
     # 初始化一个CookieJar来处理Cookie的信息
@@ -31,75 +32,59 @@ def login(username, password, pro_id):
         'USERNAME': username,
         'PASSWORD': password
     }
-    postdata = urllib.urlencode(data)
+    post_data = urllib.urlencode(data)
 
     req = urllib2.Request(url='http://jxgl.gdufs.edu.cn/jsxsd/', headers=header)
     result = opener.open(req)
     print time.strftime("%Y-%m-%d %H:%M:%S"), '进程%i---->  选课系统主页' % pro_id
     html = result.read()
     print time.strftime("%Y-%m-%d %H:%M:%S"), '进程%i---->  准备登陆' % pro_id
-    html = opener.open("http://jxgl.gdufs.edu.cn/jsxsd/xk/LoginToXkLdap", data=postdata).read()  # 登陆
+    html = opener.open("http://jxgl.gdufs.edu.cn/jsxsd/xk/LoginToXkLdap", data=post_data).read()  # 登陆
     print time.strftime("%Y-%m-%d %H:%M:%S"), '进程%i---->  登陆成功' % pro_id
-    html = opener.open("http://jxgl.gdufs.edu.cn/jsxsd/xsxk/xklc_list?Ves632DSdyV=NEW_XSD_PYGL").read()  #
-    print time.strftime("%Y-%m-%d %H:%M:%S"), '进程%i---->  选课中心' % pro_id
-    html = opener.open(
-        "http://jxgl.gdufs.edu.cn/jsxsd/xsxk/xsxk_index?jx0502zbid=7F1363248E0D41438D19DE2681AC1CAA").read()  # 选课系统
-    if '未开放' in html:
-        print "当前未开放选课，具体请查看学校选课通知！ "
-        assert False
-    while "不在选课时间" in html:
-        time.sleep(20)
-        html = opener.open(
-            "http://jxgl.gdufs.edu.cn/jsxsd/xsxk/xsxk_index?jx0502zbid=7F1363248E0D41438D19DE2681AC1CAA").read()  # 选课系统
-        print "Again!!!"
-        if 'loginUrl' in html:
-            return 0
-    print time.strftime("%Y-%m-%d %H:%M:%S"), '  学生选课首页'
-    html = opener.open("http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/comeInXxxk").read()
-    print time.strftime("%Y-%m-%d %H:%M:%S"), '  院系选修课首页'
-    url_list = ["http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/xxxkOper?jx0404id=201620171008818",  # 接口
-                # "http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/xxxkOper?jx0404id=201620171008766", # 软件工程
-                # "http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/xxxkOper?jx0404id=201620171008867", # 图像 龚永义
-                # "http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/xxxkOper?jx0404id=201620171008822", #图像 吴
-                "http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/xxxkOper?jx0404id=201620171008826",  # 互联网程序设计
-                "http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/xxxkOper?jx0404id=201620171008763"]  # 组网
 
+    # 选课的网址 每年更新 需手动修改
+    html = opener.open(
+        "http://jxgl.gdufs.edu.cn/jsxsd/xsxk/xsxk_index?jx0502zbid=5EBAB7201F344576A0FF03EA7F833ED2").read()  # 选课系统
+
+    # 选修的课程的url 需手动修改
+    url_list = ["http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/ggxxkxkOper?jx0404id=201620172011063&xkzy=&trjf=",
+                "http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/ggxxkxkOper?jx0404id=201620172010785&xkzy=&trjf=",
+                "http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/ggxxkxkOper?jx0404id=201620172010833&xkzy=&trjf=",
+                "http://jxgl.gdufs.edu.cn/jsxsd/xsxkkc/ggxxkxkOper?jx0404id=201620172010828&xkzy=&trjf="
+                ]
     try_num = 0
     course_num = url_list.__len__()
     while True:
+        if course_num == 0:
+            break
         time.sleep(0.025)
         try:
             index = try_num % course_num
             html = opener.open(url_list[index]).read()
             try_num += 1
         except:
-            print 'Time out'
             continue
         if 'loginUrl' in html:
             return 0
         pattern = '"message":"(.*?)"'
-        if '"message":"选课' in html:
+        if '"message"' in html:
             sys.stdout.write(
-                '\r进程%i---->第%i次尝试  ' % (pro_id, try_num) + time.strftime("%Y-%m-%d %H:%M:%S") + "  " + re.search(pattern, html).group(1))
+                '\r进程%i---->第%i次尝试  ' % (pro_id, try_num) + time.strftime("%Y-%m-%d %H:%M:%S") + "  " + re.search(
+                    pattern, html).group(1))
             sys.stdout.flush()
         else:
             sys.stdout.write('\r' + time.strftime("%Y-%m-%d %H:%M:%S") + "     " + html)
             sys.stdout.flush()
-        if "此课程已选" in html:
+        if "此课程已选" in html or "最多只能选" in html:
             print "选课成功！"
             url_list.pop(index)
             course_num = url_list.__len__()
 
 
 if __name__ == '__main__':
-
-    # while True:
-    #     if login('2014###', '###') == 0:  # 输入帐号密码
-    #         continue
-    #     else:
-    #         break
-    p = Pool(processes=10)
-    for i in range(10):
-        p.apply_async(login, ['2014####', '####', i])
+    pool_num = 8  # 进程数 根据电脑配置自行修改
+    p = Pool(processes=pool_num)
+    for i in range(pool_num):
+        p.apply_async(login, ['学号', '密码', i])
     p.close()
     p.join()
