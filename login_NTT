@@ -1,0 +1,62 @@
+#!/bin/sh
+cd /Users/Har/Desktop/SH
+
+python login_NTT_707.py
+
+
+
+
+
+# coding=utf-8
+"""
+Author = Eric Chen
+CreateTime = 2018.11.20
+"""
+
+import urllib
+import urllib2
+import cookielib
+import time
+import re
+import sys
+from multiprocessing import Pool
+
+fail_times = 0
+def login(username, password):
+    global fail_times
+    # 初始化一个CookieJar来处理Cookie的信息
+    cookie = cookielib.CookieJar()
+    # 建一个新的opener来使用我们的CookieJar
+    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie))
+    header = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.8',
+        'Connection': 'keep-alive',
+        'Host': 'jxgl.gdufs.edu.cn',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/47.0.2526.106 Safari/537.36'
+    }
+    data = {
+        'user': username,
+        'password': password,
+        'Login': "Login"
+    }
+    post_data = urllib.urlencode(data)
+    try:
+        req = urllib2.Request(url='http://172.16.1.1', headers=header)
+        response = urllib2.urlopen(req, timeout=1)
+        html = response.read()
+        html = opener.open("http://172.16.1.1/auth/index.html/u", data=post_data).read()  # 登陆
+        fail_times += 1
+        print "connect successfully! fail times: %i" % fail_times, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    except:
+        sys.stdout.write("still connected " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '\r')
+        sys.stdout.flush()
+
+
+if __name__ == '__main__':
+    while True:
+        login('707', '18410782')
+        # login('757', '18419119')
+        time.sleep(5)
