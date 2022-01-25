@@ -81,7 +81,7 @@ class Board:
                     print(" ", end=" ")
             print()
         print(
-            f"score: {self.score}  height: {self.height}  speed: {self.height_speed} c_v: {self.connect_value}")
+            f"[{self.level}]score: {self.score}  height: {self.height}  speed: {self.height_speed} c_v: {self.connect_value}")
 
     def multi_move(self, steps):
         for s in steps:
@@ -91,6 +91,18 @@ class Board:
     def _connect_value(self):
         value = 0
         m = {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 61: 0}
+        count = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 61: 0}
+        merge_count = {0: 5, 1: 2, 2: 5, 3: 2, 4: 5, 61: 2}
+        for i in self.board:
+            if len(i) > 0:
+                t = i[0]
+                j = 1
+                while j < len(i):
+                    if i[j] != t:
+                        break
+                    j += 1
+                count[t] += j
+
         for i in self.board:
             if len(i) > 1:
                 t = i[0]
@@ -99,7 +111,7 @@ class Board:
                     if i[j] != t:
                         break
                     j += 1
-                if j > 1:
+                if j > 1 and count[t] < merge_count[t]:
                     value += m[t] * (j ** 2)
         if self.max_length() > 5:
             return value / (1 + (self.max_length() / 10.0 + self.std_length() + 0.00001))
@@ -202,7 +214,7 @@ class BestMove:
         BestMove.max_length = 10
         BestMove.count = 0
         BestMove.move_times = 100
-        BestMove.connect_value = 0
+        BestMove.connect_value = -100
         BestMove.total_num = 100
         BestMove.score_add = 0
 
@@ -243,7 +255,7 @@ def backtrack(board: Board, move_left, steps: list, move_times):
         if board.add_score > 0:
             if BestMove.score_add == 0:
                 BestMove.score_add = board.add_score
-                BestMove.connect_value = 0
+                BestMove.connect_value = -100
             if board.connect_value > BestMove.connect_value:
                 BestMove.max_length = board.max_length()
                 BestMove.steps = copy.deepcopy(steps)
