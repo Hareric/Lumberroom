@@ -250,7 +250,7 @@ def backtrack(board: Board, move_left, steps: list, move_times):
                 BestMove.score = board.score
                 BestMove.move_times = move_times
                 BestMove.connect_value = board.connect_value
-        elif BestMove.score_add == 0 and board.score == BestMove.score:
+        elif BestMove.score_add == 0:
             c_v = board.connect_value
             if c_v > BestMove.connect_value:
                 BestMove.max_length = board.max_length()
@@ -333,7 +333,6 @@ if __name__ == '__main__':
                 try_board = BoardOffline(0)
                 b.copy_to(try_board)
                 BestMove.clear()
-                BestMove.score = b.score
                 backtrack(try_board, k, [], 0)
                 next_moves = copy.deepcopy(BestMove.steps)
 
