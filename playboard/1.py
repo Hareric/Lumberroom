@@ -44,9 +44,9 @@ class Board:
             self.board = res['board']
             self.score = res['score']
             self.height = res['height']
-        self.connect_value = self._connect_value()
         self.total_num = self._total_num()
         self.add_score = 0
+        self.connect_value = self._connect_value()
         self.origin_score = 0
 
     def _total_num(self):
@@ -109,7 +109,7 @@ class Board:
             l2c = convert_list_to_count(i)
             for ii in l2c[:1]:
                 count[ii[0]] += ii[1]
-                
+
         for i in self.board:
             if len(i) > 1:
                 t = i[0]
@@ -121,9 +121,10 @@ class Board:
                 if j > 1 and count[t] < merge_count[t]:
                     value += m[t] * (j ** 2)
         if self.max_length() > 7:
-            return value / (1 + (self.max_length() / 10.0 + self.std_length()))
+            return value / (
+                        1 + self.max_length() / 10.0 + self.std_length() + self.total_num / 40.0)
         else:
-            return value
+            return value / (self.total_num / 40.0)
 
 
 def convert_list_to_count(origin_list):
@@ -163,9 +164,9 @@ class BoardOnline(Board):
         except KeyError:
             logging.error(res)
             raise AssertionError
-        self.connect_value = self._connect_value()
         self.total_num = self._total_num()
         self.add_score = self.score - self.origin_score
+        self.connect_value = self._connect_value()
 
 
 class BoardOffline(Board):
@@ -210,9 +211,9 @@ class BoardOffline(Board):
                     new_len = len(self.board[i])
                     self.score += {0: 0.01, 1: 0.05, 2: 0.1, 3: 0.5, 4: 1}[t] * (
                             origin_len - new_len)
-        self.connect_value = self._connect_value()
         self.total_num = self._total_num()
         self.add_score = self.score - self.origin_score
+        self.connect_value = self._connect_value()
 
 
 class BestMove:
@@ -322,7 +323,7 @@ if __name__ == '__main__':
     k = 3  # 穷举的步数
     test_result = {}
     for level in range(1, 8):
-        # for level in [1]:
+    # for level in [5, 6]:
         try:
             print("level", level, "k", k)
             b = BoardOffline(level)
