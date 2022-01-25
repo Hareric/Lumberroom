@@ -252,7 +252,7 @@ def backtrack(board: Board, move_left, steps: list, move_times):
         # if board.max_length() < BestMove.max_length:
         return
     if board.max_length() <= 10:
-        c_v = board.connect_value / (1 + move_times / 10)
+        c_v = board.connect_value / (1 + move_times / 5)
         if board.add_score > 0:
             if BestMove.score_add == 0:
                 BestMove.score_add = board.add_score
