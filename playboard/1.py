@@ -45,6 +45,15 @@ class Board:
             self.score = res['score']
             self.height = res['height']
         self.connect_value = self._connect_value()
+        self.total_num = self._total_num()
+        self.add_score = 0
+        self.origin_score = 0
+
+    def _total_num(self):
+        s = 0
+        for i in self.board:
+            s += len(i)
+        return s
 
     def max_length(self):
         max_len = 0
@@ -93,10 +102,9 @@ class Board:
                 if j > 1:
                     value += m[t] * (j ** 2)
         if self.max_length() > 5:
-            return value / (1+(self.max_length()/10.0 + self.std_length() + 0.00001))
+            return value / (1 + (self.max_length() / 10.0 + self.std_length() + 0.00001))
         else:
             return value
-
 
 
 class BoardOnline(Board):
@@ -118,6 +126,8 @@ class BoardOnline(Board):
             logging.error(res)
             raise AssertionError
         self.connect_value = self._connect_value()
+        self.total_num = self._total_num()
+        self.add_score = self.score - self.origin_score
 
 
 class BoardOffline(Board):
@@ -163,12 +173,15 @@ class BoardOffline(Board):
                     self.score += {0: 0.01, 1: 0.05, 2: 0.1, 3: 0.5, 4: 1}[t] * (
                             origin_len - new_len)
         self.connect_value = self._connect_value()
+        self.total_num = self._total_num()
+        self.add_score = self.score - self.origin_score
 
     def copy_to(self, board):
         board.board = self.board
         board.score = self.score
         board.height = self.height
         board.height_speed = self.height_speed
+        board.origin_score = self.score
 
 
 class BestMove:
@@ -179,6 +192,8 @@ class BestMove:
     count = 0
     move_times = 100
     connect_value = 0
+    total_num = 100
+    score_add = 0
 
     @classmethod
     def clear(cls):
@@ -188,6 +203,8 @@ class BestMove:
         BestMove.count = 0
         BestMove.move_times = 100
         BestMove.connect_value = 0
+        BestMove.total_num = 100
+        BestMove.score_add = 0
 
 
 def evaluate_board(board: Board, k):
@@ -213,7 +230,7 @@ def move_length(row):
     for j in row:
         if j != t:
             break
-        i+=1
+        i += 1
     return i + 1
 
 
@@ -223,12 +240,17 @@ def backtrack(board: Board, move_left, steps: list, move_times):
         # if board.max_length() < BestMove.max_length:
         return
     if board.max_length() <= 10:
-        if board.score > BestMove.score:
-            BestMove.max_length = board.max_length()
-            BestMove.steps = copy.deepcopy(steps)
-            BestMove.score = board.score
-            BestMove.move_times = move_times
-        elif board.score == BestMove.score:
+        if board.add_score > 0:
+            if BestMove.score_add == 0:
+                BestMove.score_add = board.add_score
+                BestMove.connect_value = 0
+            if board.connect_value > BestMove.connect_value:
+                BestMove.max_length = board.max_length()
+                BestMove.steps = copy.deepcopy(steps)
+                BestMove.score = board.score
+                BestMove.move_times = move_times
+                BestMove.connect_value = board.connect_value
+        elif BestMove.score_add == 0 and board.score == BestMove.score:
             c_v = board.connect_value
             if c_v > BestMove.connect_value:
                 BestMove.max_length = board.max_length()
@@ -258,7 +280,8 @@ def backtrack(board: Board, move_left, steps: list, move_times):
         for j in range(5):
             if i == j or \
                     len(board.board[i]) == 0 or \
-                    (len(board.board[j]) + move_length(board.board[i]) + board.height + (1 + move_times) * board.height_speed) >= 10:
+                    (len(board.board[j]) + move_length(board.board[i]) + board.height + (
+                            1 + move_times) * board.height_speed) >= 10:
                 continue
             pre_board = copy.deepcopy(board.board)
             pre_score = board.score
@@ -278,7 +301,7 @@ def backtrack(board: Board, move_left, steps: list, move_times):
 if __name__ == '__main__':
     k = 4  # 穷举的步数
     test_result = {}
-    for level in [1,3,5,7]:
+    for level in [1, 3, 5, 7]:
         try:
             print("level", level, "k", k)
             b = BoardOffline(level)
@@ -344,3 +367,4 @@ if __name__ == '__main__':
             test_result[level] = b_online.score
             continue
     print(test_result)
+    print("avg", sum(test_result.values()) / len(test_result))
