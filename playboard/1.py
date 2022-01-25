@@ -85,7 +85,10 @@ class Board:
 
     def multi_move(self, steps):
         for s in steps:
+            origin_height = self.height
             self.move(s[0], s[1])
+            if self.height < origin_height:
+                break
         # self.print_board()
 
     def _connect_value(self):
@@ -338,6 +341,7 @@ if __name__ == '__main__':
 
                 print("move", next_moves)
                 try:
+                    # b_online.move(*next_moves[0])
                     b_online.multi_move(next_moves)
                 except IndexError:
                     continue
