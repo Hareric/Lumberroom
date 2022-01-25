@@ -72,6 +72,13 @@ class Board:
         """
         ...
 
+    def copy_to(self, board):
+        board.board = self.board
+        board.score = self.score
+        board.height = self.height
+        board.height_speed = self.height_speed
+        board.origin_score = self.score
+
     def print_board(self):
         for j in range(10)[1:]:
             for i in self.board:
@@ -190,13 +197,6 @@ class BoardOffline(Board):
         self.connect_value = self._connect_value()
         self.total_num = self._total_num()
         self.add_score = self.score - self.origin_score
-
-    def copy_to(self, board):
-        board.board = self.board
-        board.score = self.score
-        board.height = self.height
-        board.height_speed = self.height_speed
-        board.origin_score = self.score
 
 
 class BestMove:
