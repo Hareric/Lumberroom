@@ -113,7 +113,7 @@ class Board:
                     j += 1
                 if j > 1 and count[t] < merge_count[t]:
                     value += m[t] * (j ** 2)
-        if self.max_length() > 5:
+        if self.max_length() > 7:
             return value / (1 + (self.max_length() / 10.0 + self.std_length() + 0.00001))
         else:
             return value
@@ -214,7 +214,7 @@ class BestMove:
         BestMove.max_length = 10
         BestMove.count = 0
         BestMove.move_times = 100
-        BestMove.connect_value = -100
+        BestMove.connect_value = 0
         BestMove.total_num = 100
         BestMove.score_add = 0
 
@@ -252,18 +252,18 @@ def backtrack(board: Board, move_left, steps: list, move_times):
         # if board.max_length() < BestMove.max_length:
         return
     if board.max_length() <= 10:
+        c_v = board.connect_value - move_times
         if board.add_score > 0:
             if BestMove.score_add == 0:
                 BestMove.score_add = board.add_score
-                BestMove.connect_value = -100
-            if board.connect_value > BestMove.connect_value:
+                BestMove.connect_value = 0
+            if c_v > BestMove.connect_value:
                 BestMove.max_length = board.max_length()
                 BestMove.steps = copy.deepcopy(steps)
                 BestMove.score = board.score
                 BestMove.move_times = move_times
-                BestMove.connect_value = board.connect_value
+                BestMove.connect_value = c_v
         elif BestMove.score_add == 0:
-            c_v = board.connect_value
             if c_v > BestMove.connect_value:
                 BestMove.max_length = board.max_length()
                 BestMove.steps = copy.deepcopy(steps)
@@ -276,18 +276,7 @@ def backtrack(board: Board, move_left, steps: list, move_times):
                 BestMove.score = board.score
                 BestMove.move_times = move_times
                 BestMove.connect_value = c_v
-            elif BestMove.max_length > board.max_length():
-                BestMove.max_length = board.max_length()
-                BestMove.steps = copy.deepcopy(steps)
-                BestMove.score = board.score
-                BestMove.move_times = move_times
-                BestMove.connect_value = c_v
-            elif move_times < BestMove.move_times:
-                BestMove.max_length = board.max_length()
-                BestMove.steps = copy.deepcopy(steps)
-                BestMove.score = board.score
-                BestMove.move_times = move_times
-                BestMove.connect_value = c_v
+
     for i in range(5):
         for j in range(5):
             if i == j or \
@@ -311,9 +300,10 @@ def backtrack(board: Board, move_left, steps: list, move_times):
 
 
 if __name__ == '__main__':
-    k = 4  # 穷举的步数
+    k = 3  # 穷举的步数
     test_result = {}
-    for level in [1, 3, 5, 7]:
+    for level in range(1,8):
+    # for level in [1]:
         try:
             print("level", level, "k", k)
             b = BoardOffline(level)
@@ -321,27 +311,8 @@ if __name__ == '__main__':
             b_online.print_board()
 
             while True:
-                # b_online.multi_move(BestMove.steps)
                 next_move = None
                 next_moves = None
-
-                # best_grade = 0
-                # for i in range(5):
-                #     for j in range(5):
-                #         if i == j:
-                #             continue
-                #         try_board = BoardOffline(0)
-                #         b.copy_to(try_board)
-                #         try:
-                #             try_board.move(i, j)
-                #         except IndexError:
-                #             continue
-                #         g = evaluate_board(try_board, k)
-                #         if g > best_grade:
-                #             best_grade = g
-                #             next_move = (i, j)
-                #             next_moves = copy.deepcopy([(i, j)] + BestMove.steps)
-
                 try_board = BoardOffline(0)
                 b.copy_to(try_board)
                 BestMove.clear()
@@ -374,6 +345,7 @@ if __name__ == '__main__':
                 b.score = b_online.score
 
                 b_online.print_board()
+                print(test_result)
         except AssertionError:
             test_result[level] = b_online.score
             continue
