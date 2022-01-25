@@ -103,16 +103,13 @@ class Board:
         m = {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 61: 0}
         count = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 61: 0}
         merge_count = {0: 5, 1: 2, 2: 5, 3: 2, 4: 5, 61: 2}
-        for i in self.board:
-            if len(i) > 0:
-                t = i[0]
-                j = 1
-                while j < len(i):
-                    if i[j] != t:
-                        break
-                    j += 1
-                count[t] += j
 
+        # 统计每一列 前1种硬币的个数
+        for i in self.board:
+            l2c = convert_list_to_count(i)
+            for ii in l2c[:1]:
+                count[ii[0]] += ii[1]
+                
         for i in self.board:
             if len(i) > 1:
                 t = i[0]
@@ -127,6 +124,25 @@ class Board:
             return value / (1 + (self.max_length() / 10.0 + self.std_length()))
         else:
             return value
+
+
+def convert_list_to_count(origin_list):
+    """
+    input: [1,2,2,2,3,4,1]
+    return [(1,1),(2,3),(3,1),(4,1),(1,1)]
+    """
+    origin_list = copy.deepcopy(origin_list)
+    origin_list.append(None)
+    ret = []
+    if origin_list:
+        c = 1
+        for i in range(1, len(origin_list)):
+            if origin_list[i] == origin_list[i - 1]:
+                c += 1
+            else:
+                ret.append((origin_list[i - 1], c))
+                c = 1
+    return ret
 
 
 class BoardOnline(Board):
