@@ -114,7 +114,7 @@ class Board:
                 if j > 1 and count[t] < merge_count[t]:
                     value += m[t] * (j ** 2)
         if self.max_length() > 7:
-            return value / (1 + (self.max_length() / 10.0 + self.std_length() + 0.00001))
+            return value / (1 + (self.max_length() / 10.0 + self.std_length()))
         else:
             return value
 
@@ -252,7 +252,7 @@ def backtrack(board: Board, move_left, steps: list, move_times):
         # if board.max_length() < BestMove.max_length:
         return
     if board.max_length() <= 10:
-        c_v = board.connect_value - move_times
+        c_v = board.connect_value / (1 + move_times / 10)
         if board.add_score > 0:
             if BestMove.score_add == 0:
                 BestMove.score_add = board.add_score
@@ -302,8 +302,8 @@ def backtrack(board: Board, move_left, steps: list, move_times):
 if __name__ == '__main__':
     k = 3  # 穷举的步数
     test_result = {}
-    for level in range(1,8):
-    # for level in [1]:
+    for level in range(1, 8):
+        # for level in [1]:
         try:
             print("level", level, "k", k)
             b = BoardOffline(level)
