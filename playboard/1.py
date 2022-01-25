@@ -92,7 +92,10 @@ class Board:
                     j += 1
                 if j > 1:
                     value += m[t] * (j ** 2)
-        return value / (1+(self.max_length()/10.0 + self.std_length() + 0.00001))
+        if self.max_length() > 5:
+            return value / (1+(self.max_length()/10.0 + self.std_length() + 0.00001))
+        else:
+            return value
 
 
 
@@ -274,7 +277,8 @@ def backtrack(board: Board, move_left, steps: list, move_times):
 
 if __name__ == '__main__':
     k = 4  # 穷举的步数
-    for level in [7]:
+    test_result = {}
+    for level in [1,3,5,7]:
         try:
             print("level", level, "k", k)
             b = BoardOffline(level)
@@ -337,4 +341,6 @@ if __name__ == '__main__':
 
                 b_online.print_board()
         except AssertionError:
+            test_result[level] = b_online.score
             continue
+    print(test_result)
