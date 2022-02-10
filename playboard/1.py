@@ -100,7 +100,6 @@ class Board:
 
     def _connect_value(self):
         value = 0
-        m = {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 61: 0}
         count = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 61: 0}
         merge_count = {0: 5, 1: 2, 2: 5, 3: 2, 4: 5, 61: 2}
 
@@ -119,12 +118,9 @@ class Board:
                         break
                     j += 1
                 if j > 1 and count[t] < merge_count[t]:
-                    value += m[t] * (j ** 2)
-        if self.max_length() > 7:
-            return value / (
-                        1 + self.max_length() / 10.0 + self.std_length() + self.total_num / 40.0)
-        else:
-            return value / (self.total_num / 40.0)
+                    value += 1 * (j ** 2)
+        return value / (1 + self.max_length() / 10.0 + self.total_num / 40.0)
+
 
 
 def convert_list_to_count(origin_list):
@@ -268,7 +264,7 @@ def move_length(row):
 
 def backtrack(board: Board, move_left, steps: list, move_times):
     if board.max_length() <= 10:
-        c_v = board.connect_value / (1 + move_times / 5)
+        c_v = board.connect_value / (1 + move_times)
         if board.add_score > 0:
             if BestMove.score_add == 0:
                 BestMove.score_add = board.add_score
@@ -319,10 +315,10 @@ def backtrack(board: Board, move_left, steps: list, move_times):
 
 
 if __name__ == '__main__':
-    k = 3  # 穷举的步数
+    k = 2  # 穷举的步数
     test_result = {}
     for level in range(1, 8):
-    # for level in [5, 6]:
+        # for level in [5, 6]:
         try:
             print("level", level, "k", k)
             b = BoardOffline(level)
@@ -357,8 +353,8 @@ if __name__ == '__main__':
 
                 print("move", next_moves)
                 try:
-                    # b_online.move(*next_moves[0])
-                    b_online.multi_move(next_moves)
+                    b_online.move(*next_moves[0])
+                    # b_online.multi_move(next_moves)
                 except IndexError:
                     continue
                 b.board = b_online.board
