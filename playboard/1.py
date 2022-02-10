@@ -122,7 +122,6 @@ class Board:
         return value / (1 + self.max_length() / 10.0 + self.total_num / 40.0)
 
 
-
 def convert_list_to_count(origin_list):
     """
     input: [1,2,2,2,3,4,1]
@@ -263,31 +262,37 @@ def move_length(row):
 
 
 def backtrack(board: Board, move_left, steps: list, move_times):
-    if board.max_length() <= 10:
-        c_v = board.connect_value / (1 + move_times)
-        if board.add_score > 0:
-            if BestMove.score_add == 0:
-                BestMove.score_add = board.add_score
-                BestMove.connect_value = 0
-            if c_v > BestMove.connect_value:
-                BestMove.max_length = board.max_length()
-                BestMove.steps = copy.deepcopy(steps)
-                BestMove.score = board.score
-                BestMove.move_times = move_times
-                BestMove.connect_value = c_v
-        elif BestMove.score_add == 0:
-            if c_v > BestMove.connect_value:
-                BestMove.max_length = board.max_length()
-                BestMove.steps = copy.deepcopy(steps)
-                BestMove.score = board.score
-                BestMove.move_times = move_times
-                BestMove.connect_value = c_v
-            elif c_v == BestMove.connect_value and move_times < BestMove.move_times:
-                BestMove.max_length = board.max_length()
-                BestMove.steps = copy.deepcopy(steps)
-                BestMove.score = board.score
-                BestMove.move_times = move_times
-                BestMove.connect_value = c_v
+    if move_times > 0 and board.max_length() <= 10:
+        c_v = board.add_score * 100 + board.connect_value / (1 + move_times)
+        if c_v > BestMove.connect_value:
+            BestMove.max_length = board.max_length()
+            BestMove.steps = copy.deepcopy(steps)
+            BestMove.score = board.score
+            BestMove.move_times = move_times
+            BestMove.connect_value = c_v
+        # if board.add_score > 0:
+        #     if BestMove.score_add == 0:
+        #         BestMove.score_add = board.add_score
+        #         BestMove.connect_value = 0
+        #     if c_v > BestMove.connect_value:
+        #         BestMove.max_length = board.max_length()
+        #         BestMove.steps = copy.deepcopy(steps)
+        #         BestMove.score = board.score
+        #         BestMove.move_times = move_times
+        #         BestMove.connect_value = c_v
+        # elif BestMove.score_add == 0:
+        #     if c_v > BestMove.connect_value:
+        #         BestMove.max_length = board.max_length()
+        #         BestMove.steps = copy.deepcopy(steps)
+        #         BestMove.score = board.score
+        #         BestMove.move_times = move_times
+        #         BestMove.connect_value = c_v
+        #     elif c_v == BestMove.connect_value and move_times < BestMove.move_times:
+        #         BestMove.max_length = board.max_length()
+        #         BestMove.steps = copy.deepcopy(steps)
+        #         BestMove.score = board.score
+        #         BestMove.move_times = move_times
+        #         BestMove.connect_value = c_v
     if move_left == 0:
         BestMove.count += 1
         # if board.max_length() < BestMove.max_length:
@@ -315,7 +320,7 @@ def backtrack(board: Board, move_left, steps: list, move_times):
 
 
 if __name__ == '__main__':
-    k = 2  # 穷举的步数
+    k = 3  # 穷举的步数
     test_result = {}
     for level in range(1, 8):
         # for level in [5, 6]:
