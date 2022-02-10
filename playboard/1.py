@@ -158,7 +158,7 @@ class BoardOnline(Board):
         try:
             self.board = res['board']
             self.score = res['score']
-            if res['height'] - self.height > 0:
+            if res['height'] - self.height > self.height_speed:
                 self.height_speed = res['height'] - self.height
             self.height = res['height']
         except KeyError:
