@@ -263,7 +263,7 @@ def move_length(row):
 
 def backtrack(board: Board, move_left, steps: list, move_times):
     if move_times > 0 and board.max_length() <= 10:
-        c_v = board.add_score * 100 + board.connect_value / (1 + move_times)
+        c_v = board.add_score * 200 + board.connect_value / (1 + move_times)
         if c_v > BestMove.connect_value:
             BestMove.max_length = board.max_length()
             BestMove.steps = copy.deepcopy(steps)
