@@ -72,12 +72,15 @@ class Board:
         """
         ...
 
-    def copy_to(self, board):
+    def get_copy(self):
+        board = BoardOffline(0)
         board.board = self.board
         board.score = self.score
         board.height = self.height
         board.height_speed = self.height_speed
         board.origin_score = self.score
+        board.total_num = board.origin_total_num = board._total_num()
+        return board
 
     def print_board(self):
         for j in range(10)[1:]:
@@ -322,9 +325,7 @@ def backtrack(board: Board, move_left, steps: list, move_times):
 if __name__ == '__main__':
     k = 3  # 穷举的步数
     test_result = {}
-    level_list = list(range(1, 8))
-    random.shuffle(level_list)
-    for level in level_list:
+    for level in range(1, 8):
         # for level in [5, 6]:
         try:
             print("level", level, "k", k)
@@ -335,8 +336,7 @@ if __name__ == '__main__':
             while True:
                 next_move = None
                 next_moves = None
-                try_board = BoardOffline(0)
-                b.copy_to(try_board)
+                try_board = b.get_copy()
                 BestMove.clear()
                 backtrack(try_board, k, [], 0)
                 next_moves = copy.deepcopy(BestMove.steps)
@@ -358,7 +358,7 @@ if __name__ == '__main__':
                         aaa = random.randint(0, 4)
                     next_moves = [(aaa, bbb)]
 
-                print("move", next_moves)
+                print("move", next_moves, BestMove.connect_value)
                 try:
                     b_online.move(*next_moves[0])
                     # b_online.multi_move(next_moves)
