@@ -322,7 +322,9 @@ def backtrack(board: Board, move_left, steps: list, move_times):
 if __name__ == '__main__':
     k = 3  # 穷举的步数
     test_result = {}
-    for level in range(1, 8):
+    level_list = list(range(1, 8))
+    random.shuffle(level_list)
+    for level in level_list:
         # for level in [5, 6]:
         try:
             print("level", level, "k", k)
