@@ -74,7 +74,7 @@ class Board:
 
     def get_copy(self):
         board = BoardOffline(0)
-        board.board = self.board
+        board.board = copy.deepcopy(self.board)
         board.score = self.score
         board.height = self.height
         board.height_speed = self.height_speed
