@@ -124,13 +124,8 @@ class Board:
                     j += 1
                 if j > 1 and count[t] < merge_count[t]:
                     value += j
-        # if self.less_total_num > 0:
-        #     print("*:"*33, self.less_total_num, value)
-        if self.height_speed < 0.8:
-            w_1, w_2 = 1, 0.1
-        else:
-            w_1, w_2 = 1, 0.1
-        s = (w_1 * self.less_total_num + w_2 * value * 0.1)
+        w_1, w_2, w_3 = 1, 0.1, 0.05
+        s = w_1 * self.less_total_num + w_2 * value + w_3 * (10 - self.max_length())
         return s
 
 
@@ -277,7 +272,7 @@ def backtrack(board: Board, move_left, steps: list, move_times, c_v):
                 continue
             next_board = board.get_copy()
             next_board.move(i, j)
-            next_cv = c_v + next_board.connect_value / (1 + move_times * 0.5)
+            next_cv = c_v + next_board.connect_value / (1 + move_times ** 2 * 0.5)
             steps.append((i, j))
             if next_board.max_length() < 10:
                 backtrack(next_board, move_left - 1, steps, move_times + 1, next_cv)
