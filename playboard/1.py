@@ -124,7 +124,7 @@ class Board:
                     j += 1
                 if j > 1 and count[t] < merge_count[t]:
                     value += j ** 2
-        w_1, w_2, w_3 = 1, 0.05, 0.1
+        w_1, w_2, w_3 = 1, 0.06, 0.1
         s = w_1 * self.less_total_num + w_2 * value + w_3 * (10 - self.max_length())
         return s
 
@@ -326,6 +326,8 @@ if __name__ == '__main__':
 
                 b_online.print_board()
                 print(test_result)
+                if len(test_result) > 0:
+                    print("avg", sum(test_result.values()) / len(test_result))
         except AssertionError:
             test_result[level] = b_online.score
             continue
