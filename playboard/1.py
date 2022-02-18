@@ -265,10 +265,7 @@ def backtrack(board: Board, move_left, steps: list, move_times, c_v):
         return
     for i in range(5):
         for j in range(5):
-            if i == j or \
-                    len(board.board[i]) == 0 or \
-                    (len(board.board[j]) + move_length(board.board[i]) + board.height + (
-                            1 + move_times) * board.height_speed) >= 10:
+            if i == j or len(board.board[i]) == 0:
                 continue
             next_board = board.get_copy()
             next_board.move(i, j)
@@ -282,7 +279,7 @@ def backtrack(board: Board, move_left, steps: list, move_times, c_v):
 if __name__ == '__main__':
     k = 3  # 穷举的步数
     test_result = {}
-    for level in range(11, 20):
+    for level in range(1, 11):
         # for level in [5, 6]:
         try:
             print("level", level, "k", k)
