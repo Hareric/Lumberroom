@@ -123,8 +123,8 @@ class Board:
                         break
                     j += 1
                 if j > 1 and count[t] < merge_count[t]:
-                    value += j
-        w_1, w_2, w_3 = 1, 0.1, 0.05
+                    value += j ** 2
+        w_1, w_2, w_3 = 1, 0.05, 0.1
         s = w_1 * self.less_total_num + w_2 * value + w_3 * (10 - self.max_length())
         return s
 
@@ -282,7 +282,7 @@ def backtrack(board: Board, move_left, steps: list, move_times, c_v):
 if __name__ == '__main__':
     k = 3  # 穷举的步数
     test_result = {}
-    for level in range(1, 8):
+    for level in range(1, 20):
         # for level in [5, 6]:
         try:
             print("level", level, "k", k)
