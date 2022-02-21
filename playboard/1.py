@@ -37,13 +37,22 @@ class Board:
             self.score = 0
             self.height = 0
         else:
-            req = requests.request('get',
-                                   url=f"{base_url}/init?token=wendachen&level={level}")
-            res = req.json()
-            self.level = level
-            self.board = res['board']
-            self.score = res['score']
-            self.height = res['height']
+            try:
+                req = requests.request('get',
+                                       url=f"{base_url}/init?token=wendachen&level={level}")
+                res = req.json()
+                self.level = level
+                self.board = res['board']
+                self.score = res['score']
+                self.height = res['height']
+            except KeyError:
+                req = requests.request('get',
+                                       url=f"{base_url}/status?token=wendachen&level={level}")
+                res = req.json()
+                self.level = level
+                self.board = res['board']
+                self.score = res['score']
+                self.height = res['height']
         self.total_num = self.origin_total_num = self._total_num()
         self.add_score = 0
         self.less_total_num = 0
@@ -124,8 +133,9 @@ class Board:
                     j += 1
                 if j > 1 and count[t] < merge_count[t]:
                     value += j ** 2
-        w_1, w_2, w_3 = 1, 0.06, 0.1
-        s = w_1 * self.less_total_num + w_2 * value + w_3 * (10 - self.max_length())
+        w_1, w_2, w_3 = 1, 0.06, 0.01
+        s = w_1 * self.less_total_num + w_2 * value + w_3 * (
+                    100 - (self.max_length() + self.height + self.height_speed) ** 2)
         return s
 
 
@@ -279,7 +289,7 @@ def backtrack(board: Board, move_left, steps: list, move_times, c_v):
 if __name__ == '__main__':
     k = 3  # 穷举的步数
     test_result = {}
-    for level in range(1, 11):
+    for level in range(148, 201):
         # for level in [5, 6]:
         try:
             print("level", level, "k", k)
